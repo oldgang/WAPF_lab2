@@ -104,12 +104,15 @@ let rec sequenceOpts (optionals: 'a option list): 'a list option =
 // ##Implement `parseSymbols`. Useful functions: `List.map`, `sequenceOpts` as well as `splitBy` and `parseSymbol`
 
 // #### --------------- Your code goes below ---------------
-let parseSymbols (expression: string): Symbol list option = None
+let parseSymbols (expression: string): Symbol list option = 
+    splitBy ' ' expression
+    |> List.map parseSymbol
+    |> sequenceOpts
 
-//let ``exercise 3.4`` = "1 2 / +" |> parseSymbols
+let ``exercise 3.4`` = "1 2 / +" |> parseSymbols
 
 // #### Value of ``exercise 3.4``
-//SHOW ``exercise 3.4``
+SHOW ``exercise 3.4``
 
 // ### Homework 4.1
 // ##Implement `computeonp` function (AiSD or [Wiki](https://pl.wikipedia.org/wiki/Odwrotna_notacja_polska)). Hint: `::` is "right-associative"
