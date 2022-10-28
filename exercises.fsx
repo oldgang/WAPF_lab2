@@ -45,6 +45,8 @@ type Operator =
 | Minus
 | Multiply
 | Divide
+| LeftParenthesis
+| RightParenthesis
 
 // Same as above:
 // Symbol might be either a NumSymbol (with int) or OpSymbol (with Operator)
@@ -63,6 +65,8 @@ let apply (operator: Operator) (left: int) (right: int): int =
     | Minus -> left - right
     | Multiply -> left * right
     | Divide -> left / right
+    | LeftParenthesis -> failwith "Not Implemented"
+    | RightParenthesis -> failwith "Not Implemented"
 
 // test the function, e.g. `apply Divide 15 4`
 let ``exercise 3.2`` = apply Multiply 15 4
@@ -80,6 +84,8 @@ let parseSymbol (token: string): Symbol option =
     | "-" -> Some(OpSymbol Minus)
     | "*" -> Some(OpSymbol Multiply)
     | "/" -> Some(OpSymbol Divide)
+    | "(" -> Some(OpSymbol LeftParenthesis)
+    | ")" -> Some(OpSymbol RightParenthesis)
     | x -> 
         match parseNumber(x) with
         | Some(int) -> Some(NumSymbol int)
@@ -118,11 +124,21 @@ SHOW ``exercise 3.4``
 // ##Implement `computeonp` function (AiSD or [Wiki](https://pl.wikipedia.org/wiki/Odwrotna_notacja_polska)). Hint: `::` is "right-associative"
 
 // #### --------------- Your code goes below ---------------
-let rec computeonp (stack: int list) (symbols: Symbol list): int option = None
+let rec computeonp (stack: int list) (symbols: Symbol list): int option = 
+    match symbols with
+    | [] -> 
+        match stack with
+        | [ result ] -> Some(result)
+        | _ -> None
+    | NumSymbol number :: tail ->  computeonp (number :: stack) tail
+    | OpSymbol op :: tail -> 
+        match stack with
+        | a :: b :: tail2 -> computeonp ((apply op b a) :: tail2) tail
+        | _ -> None
 
 // test the function, e.g. `computeonp [] [NumSymbol 4; NumSymbol 2; OpSymbol Multiply]`
 // Important!!!! Replace the None with commented out assignment o computeonp
-let ``exercise 4.1``: int option = None //computeonp [] [NumSymbol 4; NumSymbol 2; OpSymbol Multiply]
+let ``exercise 4.1``: int option = computeonp [] [NumSymbol 4; NumSymbol 2; OpSymbol Multiply]
 
 // #### Value of ``exercise 4.1``
 SHOW ``exercise 4.1``
@@ -131,7 +147,10 @@ SHOW ``exercise 4.1``
 // ##Using `parseSymbols` and `compute`, write `onp` function
 
 // #### --------------- Your code goes below ---------------
-let onp (expression: string): int option = None
+let onp (expression: string): int option = 
+    match parseSymbols expression with
+    | Some(symbols) -> computeonp [] symbols
+    | _ -> None
 
 let ``exercise 4.2`` = onp "2 7 + 3 / 14 3 - 4 * + 3 +"
 
