@@ -161,10 +161,23 @@ SHOW ``exercise 4.2``
 // ##Implement `conv2onp` function (AiSD or (https://pl.wikipedia.org/wiki/Odwrotna_notacja_polska)).
 
 // #### --------------- Your code goes below ---------------
-let conv2onp (expression: string): Symbol list option = None
+let conv2onp (expression: string): Symbol list option = 
+    let rec conv2onp' (result: Symbol list) (stack: Operator list) (symbols: Symbol list) : Symbol list option =
+        match symbols, stack with
+        | NumSymbol number :: tail, _ -> conv2onp' (result @ [ NumSymbol number ]) stack tail
+        | OpSymbol LeftParenthesis :: tail, _ -> conv2onp' result (LeftParenthesis :: stack) tail
+        | OpSymbol RightParenthesis :: tail, LeftParenthesis :: tail2 -> conv2onp' result tail2 tail
+        | OpSymbol RightParenthesis :: _, op :: tail2 -> conv2onp' (result @ [ OpSymbol op ]) tail2 symbols
+        | OpSymbol op1 :: _, op2 :: tail2 when compare op2 op1 >= 1 ->
+            conv2onp' (result @ [ OpSymbol op2 ]) tail2 symbols
+        | OpSymbol op1 :: tail, _ -> conv2onp' result (op1 :: stack) tail
+        | [], _ -> Some(result @ (List.map OpSymbol stack))
 
-let ``exercise 4.3`` =
-    conv2onp "( 2 + 5 ) * 3 - 4 * ( 16 + 5 )"
+    match parseSymbols expression with
+    | Some symbols -> conv2onp' [] [] symbols
+    | None -> None
+
+let ``exercise 4.3`` = conv2onp "( 2 + 5 ) * 3 - 4 * ( 16 + 5 )"
 
 // #### Value of ``exercise 4.3``
 
